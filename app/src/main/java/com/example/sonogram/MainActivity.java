@@ -17,6 +17,9 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
 
 import io.chirp.connect.ChirpConnect;
@@ -46,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int RESULT_REQUEST_RECORD_AUDIO = 0;
     boolean listening = false;
     boolean messageSent = false;
+    boolean listeningack= false;
     final int BIT_STRING = 1;
     final int ERROR_STRING = 2;
     //Textbox
@@ -150,15 +154,21 @@ public class MainActivity extends AppCompatActivity {
                 {
                     int padding = (8 - (bitStringLength % 8)) % 8;
                     StringBuilder stringBuilder = new StringBuilder(padding + bitStringLength + 8);
-                    stringBuilder.append(Integer.toBinaryString(bitStringLength));
+                    String length_string=Integer.toBinaryString(bitStringLength);
+                    for (int i=0; i< (5-length_string.length()); i++){
+                        stringBuilder.append('0');
+                    }
+                    stringBuilder.append(length_string);
 
+                    stringBuilder.append(errorString.getText()+crc_g(bitStringLength,bitString.getText().toString(),4,"1111"));
                     for (int i = 0; i < padding; i++)
                     {
                         stringBuilder.append('0');
                     }
 
-                    stringBuilder.append(bitString.getText());
-                    chirpConnect.send(new BigInteger(stringBuilder.toString(), 2).toByteArray());
+
+                    chirpConnect.send(stringBuilder.toString().getBytes());
+                    listeningack=true;
                 }
             }
         });
@@ -166,8 +176,11 @@ public class MainActivity extends AppCompatActivity {
         listen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                top.setText("Listening...");
-                listening = true;
+                if(listeningack==false){
+                    top.setText("Listening...");
+                    listening = true;
+                }
+
             }
         });
 
@@ -199,11 +212,11 @@ public class MainActivity extends AppCompatActivity {
             public void onReceiving(byte channel) {
                 //if (listening)
                 //{
-                    Context context = getApplicationContext();
-                    CharSequence text = "Receiving...";
-                    int duration = Toast.LENGTH_LONG;
-                    Toast toast = Toast.makeText(context, text, duration);
-                    toast.show();
+                Context context = getApplicationContext();
+                CharSequence text = "Receiving...";
+                int duration = Toast.LENGTH_LONG;
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
                 //}
                 //Log.v("chirpConnectDemoApp", "This is called when the SDK is expecting a payload to be received on channel: " + channel);
             }
@@ -220,8 +233,74 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            BigInteger temp = new BigInteger(payload);
-                            top.setText("The received text is: " + temp.toString(2));
+                            try{
+//                                BigInteger temp = new BigInteger(payload);
+                                String rec_text = new String(payload);
+                                String len_string="";
+                                for(int i=0; i<5; i++){
+                                    len_string=len_string+rec_text.charAt(i);
+                                }
+                                int string_len=Integer.parseInt(len_string,2);
+                                String orig_text="";
+                                String orig_text_crc="";
+                                for(int i=0; i<(string_len+3);i++){
+                                    if(i< string_len){
+                                        orig_text=orig_text+rec_text.charAt(i+5);
+                                        orig_text_crc=orig_text_crc+rec_text.charAt(i+5);
+                                    }
+                                    else{
+                                        orig_text_crc=orig_text_crc+rec_text.charAt(i+5);
+                                    }
+                                }
+                                if (error_d(string_len + 3, orig_text_crc, 4, "1111") == 1) {
+                                    top.setText("The correct text is: " + orig_text);
+                                    chirpConnect.send("1".getBytes());
+                                }
+                                else{
+                                    top.setText("The wrong text is: "+orig_text);
+                                    chirpConnect.send("0".getBytes());
+                                }
+                            }
+                            catch (Exception e){
+                                top.setText(e.toString());
+                            }
+
+
+
+                        }
+                    });
+                }
+
+                else if (listeningack){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            listeningack=false;
+                            String ack= new String(payload);
+                            if(ack=="0"){
+                                int bitStringLength = bitString.length();
+                                int padding = (8 - (bitStringLength % 8)) % 8;
+                                StringBuilder stringBuilder = new StringBuilder(padding + bitStringLength + 8);
+                                String length_string=Integer.toBinaryString(bitStringLength);
+                                for (int i=0; i< (5-length_string.length()); i++){
+                                    stringBuilder.append('0');
+                                }
+                                stringBuilder.append(length_string);
+
+                                stringBuilder.append(bitString.getText()+crc_g(bitStringLength,bitString.getText().toString(),4,"1111"));
+                                for (int i = 0; i < padding; i++)
+                                {
+                                    stringBuilder.append('0');
+                                }
+
+
+                                chirpConnect.send(stringBuilder.toString().getBytes());
+                                listeningack=true;
+                            }
+                            if(ack=="1"){
+                                top.setText("Message received");
+                                listeningack=false;
+                            }
                         }
                     });
                 }
@@ -288,5 +367,107 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         chirpConnect.stop();
+    }
+
+
+    public String crc_g(int data_bits, String data_s, int divisor_bits, String divisor_s) {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int[] data;
+        int[] div;
+        int[] divisor;
+        int[] rem;
+        int[] crc;
+        int tot_length;
+
+        data = new int[data_bits];
+
+        for (int i = 0; i < data_bits; i++)
+            data[i] = Integer.parseInt(Character.toString(data_s.charAt(i)));
+
+        divisor = new int[divisor_bits];
+
+        for (int i = 0; i < divisor_bits; i++)
+            divisor[i] = Integer.parseInt(Character.toString(divisor_s.charAt(i)));
+
+        tot_length = data_bits + divisor_bits - 1;
+
+        div = new int[tot_length];
+        rem = new int[tot_length];
+        crc = new int[tot_length];
+        /*------------------ CRC GENERATION-----------------------*/
+        for (int i = 0; i < data.length; i++)
+            div[i] = data[i];
+
+        for (int j = 0; j < div.length; j++) {
+            rem[j] = div[j];
+        }
+
+        rem = divide(div, divisor, rem);
+
+        for (int i = 0; i < crc.length; i++)
+        {
+            crc[i] = (div[i] ^ rem[i]);
+        }
+
+        String crc_s="";
+        for(int i=data_bits; i < crc.length; i++){
+            crc_s=crc_s+(Integer.toString(crc[i]));
+        }
+        return crc_s;
+
+    }
+
+    public int error_d(int crc_length, String crc_s, int divisor_bits, String divisor_s)
+    {
+        int[] crc;
+        int[] div;
+        int[] divisor;
+        int[] rem;
+        div = new int[crc_length];
+        rem = new int[crc_length];
+        crc = new int[crc_length];
+        for(int i=0; i<crc_length; i++)
+            crc[i] = Integer.parseInt(Character.toString(crc_s.charAt(i)));
+
+        divisor = new int[divisor_bits];
+
+        for (int i = 0; i < divisor_bits; i++)
+            divisor[i] = Integer.parseInt(Character.toString(divisor_s.charAt(i)));
+
+
+        for(int j=0; j<crc.length; j++){
+            rem[j] = crc[j];
+        }
+
+        rem=divide(crc, divisor, rem);
+
+        for(int i=0; i< rem.length; i++)
+        {
+            if(rem[i]!=0)
+            {
+                return 0;
+            }
+            if(i==rem.length-1){
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    static int[] divide(int div[],int divisor[], int rem[])
+    {
+        int cur=0;
+        while(true)
+        {
+            for(int i=0;i<divisor.length;i++)
+                rem[cur+i]=(rem[cur+i]^divisor[i]);
+
+            while(rem[cur]==0 && cur!=rem.length-1)
+                cur++;
+
+            if((rem.length-cur)<divisor.length)
+                break;
+        }
+        return rem;
     }
 }
