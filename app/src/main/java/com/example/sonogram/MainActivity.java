@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     stringBuilder.append(length_string);
 
-                    stringBuilder.append(bitString.getText()+crc_g(bitStringLength,errorString.getText().toString(),4,"1111"));
+                    stringBuilder.append(errorString.getText()+crc_g(bitStringLength,bitString.getText().toString(),4,"1111"));
                     for (int i = 0; i < padding; i++)
                     {
                         stringBuilder.append('0');
@@ -253,9 +253,11 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 }
                                 if (error_d(string_len + 3, orig_text_crc, 4, "1111") == 1) {
-                                    top.setText("The received text is: " + orig_text);
+                                    top.setText("The correct text is: " + orig_text);
+                                    chirpConnect.send("1".getBytes());
                                 }
                                 else{
+                                    top.setText("The wrong text is: "+orig_text);
                                     chirpConnect.send("0".getBytes());
                                 }
                             }
@@ -296,6 +298,7 @@ public class MainActivity extends AppCompatActivity {
                                 listeningack=true;
                             }
                             if(ack=="1"){
+                                top.setText("Message received");
                                 listeningack=false;
                             }
                         }
