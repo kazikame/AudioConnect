@@ -212,11 +212,11 @@ public class MainActivity extends AppCompatActivity {
             public void onReceiving(byte channel) {
                 //if (listening)
                 //{
-                    Context context = getApplicationContext();
-                    CharSequence text = "Receiving...";
-                    int duration = Toast.LENGTH_LONG;
-                    Toast toast = Toast.makeText(context, text, duration);
-                    toast.show();
+                Context context = getApplicationContext();
+                CharSequence text = "Receiving...";
+                int duration = Toast.LENGTH_LONG;
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
                 //}
                 //Log.v("chirpConnectDemoApp", "This is called when the SDK is expecting a payload to be received on channel: " + channel);
             }
