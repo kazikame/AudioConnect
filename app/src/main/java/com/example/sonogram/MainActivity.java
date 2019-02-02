@@ -152,15 +152,15 @@ public class MainActivity extends AppCompatActivity {
 
                 else
                 {
-                    int padding = (8 - (bitStringLength % 8)) % 8;
-                    StringBuilder stringBuilder = new StringBuilder(padding + bitStringLength + 8);
+                    int padding = (8 - ((bitStringLength+2) % 8)) % 8;
+                    StringBuilder stringBuilder = new StringBuilder(padding + bitStringLength + 10);
                     String length_string=Integer.toBinaryString(bitStringLength);
                     for (int i=0; i< (5-length_string.length()); i++){
                         stringBuilder.append('0');
                     }
                     stringBuilder.append(length_string);
 
-                    stringBuilder.append(errorString.getText()+crc_g(bitStringLength,bitString.getText().toString(),4,"1111"));
+                    stringBuilder.append(errorString.getText()+crc_g(bitStringLength,bitString.getText().toString(),6,"101100"));
                     for (int i = 0; i < padding; i++)
                     {
                         stringBuilder.append('0');
@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
                                 int string_len=Integer.parseInt(len_string,2);
                                 String orig_text="";
                                 String orig_text_crc="";
-                                for(int i=0; i<(string_len+3);i++){
+                                for(int i=0; i<(string_len+5);i++){
                                     if(i< string_len){
                                         orig_text=orig_text+rec_text.charAt(i+5);
                                         orig_text_crc=orig_text_crc+rec_text.charAt(i+5);
@@ -252,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
                                         orig_text_crc=orig_text_crc+rec_text.charAt(i+5);
                                     }
                                 }
-                                if (error_d(string_len + 3, orig_text_crc, 4, "1111") == 1) {
+                                if (error_d(string_len + 3, orig_text_crc, 6, "101100") == 1) {
                                     top.setText("The correct text is: " + orig_text);
                                     chirpConnect.send("1".getBytes());
                                 }
@@ -287,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
                                 stringBuilder.append(length_string);
 
-                                stringBuilder.append(bitString.getText()+crc_g(bitStringLength,bitString.getText().toString(),4,"1111"));
+                                stringBuilder.append(bitString.getText()+crc_g(bitStringLength,bitString.getText().toString(),6,"101100"));
                                 for (int i = 0; i < padding; i++)
                                 {
                                     stringBuilder.append('0');
