@@ -2,6 +2,7 @@ package com.example.sonogram;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -14,7 +15,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
@@ -27,6 +27,8 @@ import io.chirp.connect.interfaces.ConnectEventListener;
 import io.chirp.connect.interfaces.ConnectSetConfigListener;
 import io.chirp.connect.models.ChirpError;
 import io.chirp.connect.models.ConnectState;
+
+import static com.example.sonogram.CRCToolkit.*;
 
 public class MainActivity extends AppCompatActivity {
     String KEY = "A28cBeC94C2f7e8D2eFEc6244";
@@ -52,23 +54,30 @@ public class MainActivity extends AppCompatActivity {
     boolean listeningack= false;
     final int BIT_STRING = 1;
     final int ERROR_STRING = 2;
-    //Textbox
+    String correctText;
     ChirpConnect chirpConnect = new ChirpConnect(this, KEY, SECRET);
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         // Request audio permission if not given by default.
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.RECORD_AUDIO}, RESULT_REQUEST_RECORD_AUDIO);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.RECORD_AUDIO},
+                    RESULT_REQUEST_RECORD_AUDIO);
         }
+
         //Top text view
         final TextView top = findViewById(R.id.hello);
-        final TextView wrong1 = findViewById(R.id.wrong1);
-        final TextView correct1 = findViewById(R.id.correct1);
-        final TextView wrong2 = findViewById(R.id.wrong2);
-        final TextView correct2 = findViewById(R.id.correct2);
+//        final TextView wrong1 = findViewById(R.id.wrong1);
+//        final TextView correct1 = findViewById(R.id.correct1);
+//        final TextView wrong2 = findViewById(R.id.wrong2);
+//        final TextView correct2 = findViewById(R.id.correct2);
+
         //Binary string buttons
         final Button one = findViewById(R.id.one);
         final Button zero = findViewById(R.id.zero);
@@ -78,23 +87,26 @@ public class MainActivity extends AppCompatActivity {
         final Button listen = findViewById(R.id.listen);
 
         //Text fields
-        final EditText bitString1 = findViewById(R.id.bitstring1);
-        final EditText errorbit11 = findViewById(R.id.errorbit11);
-        final EditText errorbit12 = findViewById(R.id.errorbit12);
-        final EditText bitString2 = findViewById(R.id.bitstring2);
-        final EditText errorbit21 = findViewById(R.id.errorbit21);
-        final EditText errorbit22 = findViewById(R.id.errorbit22);
+//        final EditText bitString1 = findViewById(R.id.bitstring1);
+//        final EditText errorbit11 = findViewById(R.id.errorbit11);
+//        final EditText errorbit12 = findViewById(R.id.errorbit12);
+//        final EditText bitString2 = findViewById(R.id.bitstring2);
+//        final EditText errorbit21 = findViewById(R.id.errorbit21);
+//        final EditText errorbit22 = findViewById(R.id.errorbit22);
+
+        final EditText bitString = findViewById(R.id.bitstring);
+        final EditText errorBitString = findViewById(R.id.errorbits);
 
 
         one.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (bitString1.hasFocus()) {
-                    bitString1.setText(bitString1.getText() + "1");
+                if (errorBitString.hasFocus()) {
+                    errorBitString.append("1");
                 }
 
                 else {
-                    bitString2.setText(bitString2.getText() + "1");
+                    bitString.append("1");
                 }
 //                if (bitString.isEnabled()) {
 //                    String temp = bitString.getText() + "1";
@@ -111,12 +123,12 @@ public class MainActivity extends AppCompatActivity {
         zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (bitString1.hasFocus()) {
-                    bitString1.setText(bitString1.getText() + "0");
+                if (errorBitString.hasFocus()) {
+                    errorBitString.append("0");
                 }
 
                 else {
-                    bitString2.setText(bitString2.getText() + "0");
+                    bitString.append("0");
                 }
 //                if (bitString.isEnabled()) {
 //                    String temp = bitString.getText() + "0";
@@ -134,62 +146,83 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                int bitString1Length = bitString1.length();
-                int bitString2Length = bitString2.length();
-
-                if (bitString1Length == 0)
+                int bitStringLength = bitString.length();
+                int errorStringLength = errorBitString.length();
+                if (bitStringLength == 0)
                 {
-                    bitString1.requestFocus();
-                    Context context = getApplicationContext();
-                    CharSequence text = "Enter a bit string!";
-                    int duration = Toast.LENGTH_SHORT;
-                    Toast toast = Toast.makeText(context, text, duration);
-                    toast.show();
+                    bitString.requestFocus();
+                    Toast.makeText(getApplicationContext(),
+                            "Enter a bit string!",
+                            Toast.LENGTH_SHORT).show();
                 }
 
-                if (bitString2Length == 0)
-                {
-                    bitString2.requestFocus();
-                    Context context = getApplicationContext();
-                    CharSequence text = "Enter a bit string!";
-                    int duration = Toast.LENGTH_SHORT;
-                    Toast toast = Toast.makeText(context, text, duration);
-                    toast.show();
+                else if (errorStringLength == 0) {
+                    correctText = bitString.getText().toString();
+                    chirpConnect.send((correctText + crc_g(bitStringLength, correctText)).getBytes());
                 }
 
-                else
-                {
-                    String bitstring=bitString1.getText().toString();
-                    String errorstring="";
-                    for(int i=0; i<bitString1Length;i++){
-                        if(i==Integer.parseInt(errorbit11.getText().toString()) || i==Integer.parseInt(errorbit12.getText().toString())){
-                            if(bitstring.charAt(i)=='0'){
-                                errorstring+="1";
-                            }
-                            else{
-                                errorstring+="0";
-                            }
-                        }
-                        else{
-                            errorstring+=bitstring.charAt(i);
-                        }
+                else if (bitStringLength != errorStringLength) {
+                    Toast.makeText(getApplicationContext(),
+                            "String length's don't match!",
+                            Toast.LENGTH_SHORT).show();
+                    if (bitStringLength > errorStringLength) {
+                        errorBitString.requestFocus();
                     }
-                    StringBuilder stringBuilder = new StringBuilder(bitString1Length + 5);
-                    stringBuilder.append(errorstring+crc_g(bitString1Length,bitstring,6,"101100"));
-                    chirpConnect.send(stringBuilder.toString().getBytes());
-                    listeningack=true;
+                    else
+                        bitString.requestFocus();
                 }
+
+                else {
+                    // SENDING THE ERROR BITS!!!
+                    String toBeSent = errorBitString.getText().toString();
+                    correctText = bitString.getText().toString();
+                    chirpConnect.send((toBeSent + crc_g(bitStringLength, correctText)).getBytes());
+                    Toast.makeText(getApplicationContext(), "Sending...", Toast.LENGTH_SHORT).show();
+                }
+
+//                if (bitString2Length == 0)
+//                {
+//                    bitString2.requestFocus();
+//                    Toast.makeText(getApplicationContext(),
+//                            "Enter a bit string!",
+//                            Toast.LENGTH_SHORT).show();
+//                }
+
+//                else
+//                {
+//                    String bitstring = bitString.getText().toString();
+//                    StringBuilder errorstring = new StringBuilder();
+//                    for(int i = 0; i < bitStringLength; i++) {
+//                        if(i == Integer.parseInt(errorbit11.getText().toString())
+//                                || i == Integer.parseInt(errorbit12.getText().toString())) {
+//                            if(bitstring.charAt(i)=='0'){
+//                                errorstring.append("1");
+//                            }
+//                            else {
+//                                errorstring.append("0");
+//                            }
+//                        }
+//                        else {
+//                            errorstring.append(bitstring.charAt(i));
+//                        }
+//                    }
+//                    StringBuilder stringBuilder = new StringBuilder(bitString1Length + 5);
+//                    stringBuilder.append(errorstring+crc_g(bitString1Length,bitstring,6,"101100"));
+//                    chirpConnect.send(stringBuilder.toString().getBytes());
+//                    listeningack=true;
+//                }
             }
         });
 
         listen.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(listeningack==false){
-                    top.setText("Listening...");
-                    listening = true;
-                }
-
+                chirpConnect.stop();
+               startActivity(new Intent(getApplicationContext(), ReceivingActivity.class));
+//                if(!listeningack){
+//                    top.setText("Listening...");
+//                    listening = true;
+//                }
             }
         });
 
@@ -198,133 +231,106 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSending(byte[] payload, byte channel) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Context context = getApplicationContext();
-                        CharSequence text = "Sending...";
-                        int duration = Toast.LENGTH_LONG;
-                        Toast toast = Toast.makeText(context, text, duration);
-                        toast.show();
-                    }
-                });
 
             }
 
             @Override
             public void onSent(byte[] payload, byte channel) {
-                Log.v("chirpConnectDemoApp", "This is called when a payload has been sent " + payload  + " on channel: " + channel);
+                Log.v("chirpConnectDemoApp",
+                        "This is called when a payload has been sent "
+                                + payload
+                                + " on channel: "
+                                + channel);
                 messageSent = true;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        top.setText("Waiting for acknowledgement!");
+                    }
+                });
             }
 
             @Override
             public void onReceiving(byte channel) {
                 //if (listening)
-                //{
-                Context context = getApplicationContext();
-                CharSequence text = "Receiving...";
-                int duration = Toast.LENGTH_LONG;
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
+                if (messageSent && (int)channel == 2)
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Receiving ack...", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                else if ((int) channel == 0)
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Receiving on channel", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 //}
-                //Log.v("chirpConnectDemoApp", "This is called when the SDK is expecting a payload to be received on channel: " + channel);
+                Log.v("chirpConnectDemoApp", "This is called when the SDK is expecting a payload to be received on channel: " + channel);
             }
 
             @Override
             public void onReceived(final byte[] payload, byte channel) {
-                Log.v("chirpConnectDemoApp", "This is called when a payload has been received " + payload  + " on channel: " + channel);
-                if (messageSent && channel == 2) {
+                Log.v("chirpConnectDemoApp",
+                        "This is called when a payload has been received "
+                                + payload
+                                + " on channel: "
+                                + channel);
 
-                }
+//                if (listening)
+//                {
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            String rec_text = new String(payload);
+//                            int rec_text_length=rec_text.length();
+//                            String orig_text=rec_text.substring(0,rec_text_length-5);
+//                            String orig_text_crc=rec_text;
+//
+//                            if (error_d(rec_text_length, orig_text_crc, 6, "101100") == 1) {
+//                                correct1.setText("The correct message 1 is: " + orig_text);
+//                                chirpConnect.send("11".getBytes());
+//                            }
+//                            else{
+//                                wrong1.setText("The wrong message 1 is: "+orig_text);
+//                                chirpConnect.send("10".getBytes());
+//                            }
+//
+//
+//                        }
+//                    });
+//                }
 
-                else if (listening)
-                {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            String rec_text = new String(payload);
-                            int rec_text_length=rec_text.length();
-                            String orig_text=rec_text.substring(0,rec_text_length-5);
-                            String orig_text_crc=rec_text;
-
-                            if (error_d(rec_text_length, orig_text_crc, 6, "101100") == 1) {
-                                correct1.setText("The correct message 1 is: " + orig_text);
-                                chirpConnect.send("11".getBytes());
-                            }
-                            else{
-                                wrong1.setText("The wrong message 1 is: "+orig_text);
-                                chirpConnect.send("10".getBytes());
-                            }
-
+                if (messageSent){
+                    if (channel == 2) {
+                        if (payload.toString().equals("1"))
+                        {
+                            messageSent = false;
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), "Sent Successfully!", Toast.LENGTH_SHORT).show();
+                                    top.setText("Successful!");
+                                }
+                            });
 
                         }
-                    });
-                }
 
-                else if (listeningack){
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            String ack= new String(payload);
-                            if(ack=="10"){
-                                listeningack=false;
-                                int bitString1Length = bitString1.length();
-                                StringBuilder stringBuilder = new StringBuilder(bitString1Length + 5);
-                                stringBuilder.append(bitString1.getText().toString()+crc_g(bitString1Length,bitString1.getText().toString(),6,"101100"));
-                                chirpConnect.send(stringBuilder.toString().getBytes());
-                                listeningack=true;
-
-                            }
-                            else if(ack=="11"){
-                                top.setText("Message 1 received");
-                                String bitstring=bitString2.getText().toString();
-                                int bitString2Length=bitString2.length();
-                                String errorstring="";
-                                for(int i=0; i<bitString2Length;i++){
-                                    if(i==Integer.parseInt(errorbit21.getText().toString()) || i==Integer.parseInt(errorbit22.getText().toString())){
-                                        if(bitstring.charAt(i)=='0'){
-                                            errorstring+="1";
-                                        }
-                                        else{
-                                            errorstring+="0";
-                                        }
-                                    }
-                                    else{
-                                        errorstring+=bitstring.charAt(i);
-                                    }
+                        else
+                        {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), "Unsuccessful, Retrying!", Toast.LENGTH_SHORT).show();
                                 }
-                                StringBuilder stringBuilder = new StringBuilder(bitString2Length + 5);
-                                stringBuilder.append(errorstring+crc_g(bitString2Length,bitstring,6,"101100"));
-                                chirpConnect.send(stringBuilder.toString().getBytes());
-                            }
+                            });
 
-                            else if(ack=="20"){
-                                int bitString2Length = bitString2.length();
-                                StringBuilder stringBuilder = new StringBuilder(bitString2Length + 5);
-                                stringBuilder.append(bitString2.getText()+crc_g(bitString2Length,bitString2.getText().toString(),6,"101100"));
-                                chirpConnect.send(stringBuilder.toString().getBytes());
-                            }
-                            else if(ack=="21"){
-                                top.setText("Message 2 received");
-                                listeningack=false;
-                            }
-                            else{
-                                String rec_text = new String(payload);
-                                int rec_text_length=rec_text.length();
-                                String orig_text=rec_text.substring(0,rec_text_length-5);
-                                String orig_text_crc=rec_text;
-                                if (error_d(rec_text_length, orig_text_crc, 6, "101100") == 1) {
-                                    correct2.setText("The correct message 2 is: " + orig_text);
-                                    chirpConnect.send("21".getBytes());
-                                }
-                                else{
-                                    wrong2.setText("The wrong message 2 is: "+orig_text);
-                                    chirpConnect.send("20".getBytes());
-                                }
-                            }
+                            chirpConnect.send((correctText + crc_g(correctText.length(), correctText)).getBytes());
                         }
-                    });
+                    }
+
                 }
             }
 
@@ -335,7 +341,11 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSystemVolumeChanged(int old, int current) {
-                Log.d("chirpConnectDemoApp", "This is called when the Android system volume has changed " + old + " -> " + current);
+                Log.d("chirpConnectDemoApp",
+                        "This is called when the Android system volume has changed "
+                                + old
+                                + " -> " + current);
+
             }
 
         };
@@ -361,8 +371,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.RECORD_AUDIO}, RESULT_REQUEST_RECORD_AUDIO);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.RECORD_AUDIO},
+                    RESULT_REQUEST_RECORD_AUDIO);
         }
         else {
             chirpConnect.start();
@@ -370,7 +383,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[],
+                                           int[] grantResults) {
         switch (requestCode) {
             case RESULT_REQUEST_RECORD_AUDIO: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -392,104 +407,4 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public String crc_g(int data_bits, String data_s, int divisor_bits, String divisor_s) {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        int[] data;
-        int[] div;
-        int[] divisor;
-        int[] rem;
-        int[] crc;
-        int tot_length;
-
-        data = new int[data_bits];
-
-        for (int i = 0; i < data_bits; i++)
-            data[i] = Integer.parseInt(Character.toString(data_s.charAt(i)));
-
-        divisor = new int[divisor_bits];
-
-        for (int i = 0; i < divisor_bits; i++)
-            divisor[i] = Integer.parseInt(Character.toString(divisor_s.charAt(i)));
-
-        tot_length = data_bits + divisor_bits - 1;
-
-        div = new int[tot_length];
-        rem = new int[tot_length];
-        crc = new int[tot_length];
-        /*------------------ CRC GENERATION-----------------------*/
-        for (int i = 0; i < data.length; i++)
-            div[i] = data[i];
-
-        for (int j = 0; j < div.length; j++) {
-            rem[j] = div[j];
-        }
-
-        rem = divide(div, divisor, rem);
-
-        for (int i = 0; i < crc.length; i++)
-        {
-            crc[i] = (div[i] ^ rem[i]);
-        }
-
-        String crc_s="";
-        for(int i=data_bits; i < crc.length; i++){
-            crc_s=crc_s+(Integer.toString(crc[i]));
-        }
-        return crc_s;
-
-    }
-
-    public int error_d(int crc_length, String crc_s, int divisor_bits, String divisor_s)
-    {
-        int[] crc;
-        int[] div;
-        int[] divisor;
-        int[] rem;
-        div = new int[crc_length];
-        rem = new int[crc_length];
-        crc = new int[crc_length];
-        for(int i=0; i<crc_length; i++)
-            crc[i] = Integer.parseInt(Character.toString(crc_s.charAt(i)));
-
-        divisor = new int[divisor_bits];
-
-        for (int i = 0; i < divisor_bits; i++)
-            divisor[i] = Integer.parseInt(Character.toString(divisor_s.charAt(i)));
-
-
-        for(int j=0; j<crc.length; j++){
-            rem[j] = crc[j];
-        }
-
-        rem=divide(crc, divisor, rem);
-
-        for(int i=0; i< rem.length; i++)
-        {
-            if(rem[i]!=0)
-            {
-                return 0;
-            }
-            if(i==rem.length-1){
-                return 1;
-            }
-        }
-        return 0;
-    }
-
-    static int[] divide(int div[],int divisor[], int rem[])
-    {
-        int cur=0;
-        while(true)
-        {
-            for(int i=0;i<divisor.length;i++)
-                rem[cur+i]=(rem[cur+i]^divisor[i]);
-
-            while(rem[cur]==0 && cur!=rem.length-1)
-                cur++;
-
-            if((rem.length-cur)<divisor.length)
-                break;
-        }
-        return rem;
-    }
 }

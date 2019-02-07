@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,208 +7,114 @@
     tools:context=".MainActivity">
 
 
-
     <TextView
         android:id="@+id/hello"
-        android:layout_width="wrap_content"
+        android:layout_width="303dp"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="43dp"
+        android:layout_marginTop="64dp"
+        android:layout_marginEnd="65dp"
         android:text="AudioConnect"
+        android:textAlignment="center"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.025" />
-
-    <TextView
-        android:id="@+id/wrong1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Wrong message 1"
-        android:layout_marginTop="1dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hello"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <TextView
-        android:id="@+id/correct1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Correct message 1"
-        android:layout_marginTop="1dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/wrong1"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <TextView
-        android:id="@+id/wrong2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Wrong message 2"
-        android:layout_marginTop="1dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/correct1"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <TextView
-        android:id="@+id/correct2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Correct message 2"
-        android:layout_marginTop="1dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/wrong2"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.157" />
 
     <EditText
-        android:id="@+id/bitstring1"
+        android:id="@+id/bitstring"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_marginStart="98dp"
-        android:layout_marginTop="1dp"
-        android:layout_marginEnd="100dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="454dp"
         android:ems="10"
-        android:hint="Bitstring 1"
+        android:hint="Bitstring"
         android:inputType="number"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/correct2"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.347" />
 
     <EditText
-        android:id="@+id/errorbit11"
+        android:id="@+id/errorbits"
         android:layout_width="wrap_content"
         android:layout_height="41dp"
-        android:layout_marginStart="98dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="100dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="97dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="396dp"
         android:ems="10"
-        android:hint="Error Bit 1-1"
+        android:hint="Error Bitstring"
         android:inputType="number"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bitstring1"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <EditText
-        android:id="@+id/errorbit12"
-        android:layout_width="wrap_content"
-        android:layout_height="41dp"
-        android:layout_marginStart="98dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="100dp"
-        android:ems="10"
-        android:hint="Error Bit 1-2"
-        android:inputType="number"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/errorbit11"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <EditText
-        android:id="@+id/bitstring2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="98dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="100dp"
-        android:ems="10"
-        android:hint="Bitstring 2"
-        android:inputType="number"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/errorbit12"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <EditText
-        android:id="@+id/errorbit21"
-        android:layout_width="wrap_content"
-        android:layout_height="41dp"
-        android:layout_marginStart="98dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="100dp"
-        android:ems="10"
-        android:hint="Error Bit 2-1"
-        android:inputType="number"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bitstring2"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <EditText
-        android:id="@+id/errorbit22"
-        android:layout_width="wrap_content"
-        android:layout_height="41dp"
-        android:layout_marginStart="98dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="100dp"
-        android:ems="10"
-        android:hint="Error Bit 2-2"
-        android:inputType="number"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/errorbit21"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.44"
+        tools:layout_editor_absoluteX="98dp" />
 
     <Button
         android:id="@+id/send"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="1dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="59dp"
+        android:layout_marginBottom="232dp"
         android:text="Send!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/errorbit22"
-        app:layout_constraintVertical_bias="0.0"
-        android:layout_marginStart="50dp" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
         android:id="@+id/listen"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="50dp"
-        android:layout_marginTop="1dp"
+        android:layout_marginBottom="232dp"
         android:text="Listen!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/errorbit22"
-        app:layout_constraintVertical_bias="0.0"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
         android:id="@+id/one"
         style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="200dp"
+        android:layout_width="202dp"
         android:layout_height="150dp"
-        android:layout_marginTop="1dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="0dp"
         android:text="ONE"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/listen"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
     <Button
@@ -216,18 +122,21 @@
         style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="200dp"
         android:layout_height="150dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="1dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="0dp"
         android:text="ZERO"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/listen"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
 
 
 
 
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>
