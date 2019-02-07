@@ -164,14 +164,14 @@ public class MainActivity extends AppCompatActivity {
                     for(int i=0; i<bitString1Length;i++){
                         if(i==Integer.parseInt(errorbit11.getText().toString()) || i==Integer.parseInt(errorbit12.getText().toString())){
                             if(bitstring.charAt(i)=='0'){
-                                errorstring=errorstring+"1";
+                                errorstring+="1";
                             }
                             else{
-                                errorstring=errorstring+"0";
+                                errorstring+="0";
                             }
                         }
                         else{
-                            errorstring=errorstring+bitstring.charAt(i);
+                            errorstring+=bitstring.charAt(i);
                         }
                     }
                     StringBuilder stringBuilder = new StringBuilder(bitString1Length + 5);
@@ -244,17 +244,9 @@ public class MainActivity extends AppCompatActivity {
                         public void run() {
                             String rec_text = new String(payload);
                             int rec_text_length=rec_text.length();
-                            String orig_text="";
-                            String orig_text_crc="";
-                            for(int i=0; i<(rec_text_length);i++){
-                                if(i< rec_text_length-5){
-                                    orig_text=orig_text+rec_text.charAt(i);
-                                    orig_text_crc=orig_text_crc+rec_text.charAt(i);
-                                }
-                                else{
-                                    orig_text_crc=orig_text_crc+rec_text.charAt(i);
-                                }
-                            }
+                            String orig_text=rec_text.substring(0,rec_text_length-5);
+                            String orig_text_crc=rec_text;
+
                             if (error_d(rec_text_length, orig_text_crc, 6, "101100") == 1) {
                                 correct1.setText("The correct message 1 is: " + orig_text);
                                 chirpConnect.send("11".getBytes());
@@ -273,9 +265,10 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            listeningack=false;
+
                             String ack= new String(payload);
                             if(ack=="10"){
+                                listeningack=false;
                                 int bitString1Length = bitString1.length();
                                 StringBuilder stringBuilder = new StringBuilder(bitString1Length + 5);
                                 stringBuilder.append(bitString1.getText().toString()+crc_g(bitString1Length,bitString1.getText().toString(),6,"101100"));
@@ -291,20 +284,19 @@ public class MainActivity extends AppCompatActivity {
                                 for(int i=0; i<bitString2Length;i++){
                                     if(i==Integer.parseInt(errorbit21.getText().toString()) || i==Integer.parseInt(errorbit22.getText().toString())){
                                         if(bitstring.charAt(i)=='0'){
-                                            errorstring=errorstring+"1";
+                                            errorstring+="1";
                                         }
                                         else{
-                                            errorstring=errorstring+"0";
+                                            errorstring+="0";
                                         }
                                     }
                                     else{
-                                        errorstring=errorstring+bitstring.charAt(i);
+                                        errorstring+=bitstring.charAt(i);
                                     }
                                 }
                                 StringBuilder stringBuilder = new StringBuilder(bitString2Length + 5);
                                 stringBuilder.append(errorstring+crc_g(bitString2Length,bitstring,6,"101100"));
                                 chirpConnect.send(stringBuilder.toString().getBytes());
-                                listeningack=true;
                             }
 
                             else if(ack=="20"){
@@ -312,7 +304,6 @@ public class MainActivity extends AppCompatActivity {
                                 StringBuilder stringBuilder = new StringBuilder(bitString2Length + 5);
                                 stringBuilder.append(bitString2.getText()+crc_g(bitString2Length,bitString2.getText().toString(),6,"101100"));
                                 chirpConnect.send(stringBuilder.toString().getBytes());
-                                listeningack=true;
                             }
                             else if(ack=="21"){
                                 top.setText("Message 2 received");
@@ -321,17 +312,8 @@ public class MainActivity extends AppCompatActivity {
                             else{
                                 String rec_text = new String(payload);
                                 int rec_text_length=rec_text.length();
-                                String orig_text="";
-                                String orig_text_crc="";
-                                for(int i=0; i<(rec_text_length);i++){
-                                    if(i< rec_text_length-5){
-                                        orig_text=orig_text+rec_text.charAt(i);
-                                        orig_text_crc=orig_text_crc+rec_text.charAt(i);
-                                    }
-                                    else{
-                                        orig_text_crc=orig_text_crc+rec_text.charAt(i);
-                                    }
-                                }
+                                String orig_text=rec_text.substring(0,rec_text_length-5);
+                                String orig_text_crc=rec_text;
                                 if (error_d(rec_text_length, orig_text_crc, 6, "101100") == 1) {
                                     correct2.setText("The correct message 2 is: " + orig_text);
                                     chirpConnect.send("21".getBytes());
@@ -339,7 +321,6 @@ public class MainActivity extends AppCompatActivity {
                                 else{
                                     wrong2.setText("The wrong message 2 is: "+orig_text);
                                     chirpConnect.send("20".getBytes());
-                                    listeningack=true;
                                 }
                             }
                         }
