@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
                                 + " on channel: "
                                 + channel);
                 messageSent = true;
-                listeningack=true;
+//                listeningack=true;
 
                 runOnUiThread(new Runnable() {
                     @Override
@@ -324,14 +324,15 @@ public class MainActivity extends AppCompatActivity {
 //                }
 
                 if (messageSent){
-                    listeningack=false;
+//                    listeningack=false;
                     if ((new String(payload)).equals("1"))
                     {
-                        send.setEnabled(true);
+
                         messageSent = false;
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                send.setEnabled(true);
                                 Toast.makeText(getApplicationContext(), "Sent Successfully!", Toast.LENGTH_SHORT).show();
                                 top.setText("Successful!");
                             }
