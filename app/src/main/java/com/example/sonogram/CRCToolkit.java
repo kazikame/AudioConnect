@@ -50,7 +50,7 @@ public class CRCToolkit {
 
     }
 
-    public static int error_d(int crc_length, String crc_s)
+    public static boolean error_d(int crc_length, String crc_s)
     {
 
         int[] crc;
@@ -79,17 +79,18 @@ public class CRCToolkit {
         {
             if(rem[i]!=0)
             {
-                return 0;
+                return false;
             }
             if(i==rem.length-1){
-                return 1;
+                return true;
             }
         }
-        return 0;
+        return false;
     }
     public static String strip_crc(String data) {
         return data.substring(0, data.length() - (divisor_bits -1));
     }
+
     public static int[] divide(int div[], int divisor[], int rem[])
     {
         int cur=0;
