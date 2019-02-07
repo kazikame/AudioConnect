@@ -65,6 +65,10 @@ public class MainActivity extends AppCompatActivity {
         }
         //Top text view
         final TextView top = findViewById(R.id.hello);
+        final TextView wrong1 = findViewById(R.id.wrong1);
+        final TextView correct1 = findViewById(R.id.correct1);
+        final TextView wrong2 = findViewById(R.id.wrong2);
+        final TextView correct2 = findViewById(R.id.correct2);
         //Binary string buttons
         final Button one = findViewById(R.id.one);
         final Button zero = findViewById(R.id.zero);
@@ -74,21 +78,23 @@ public class MainActivity extends AppCompatActivity {
         final Button listen = findViewById(R.id.listen);
 
         //Text fields
-        final EditText bitString = findViewById(R.id.bitstring);
-        final EditText errorString = findViewById(R.id.error);
-        bitString.setShowSoftInputOnFocus(false);
+        final EditText bitString1 = findViewById(R.id.bitstring1);
+        final EditText errorbit11 = findViewById(R.id.errorbit11);
+        final EditText errorbit12 = findViewById(R.id.errorbit12);
+        final EditText bitString2 = findViewById(R.id.bitstring2);
+        final EditText errorbit21 = findViewById(R.id.errorbit21);
+        final EditText errorbit22 = findViewById(R.id.errorbit22);
 
-        errorString.setShowSoftInputOnFocus(false);
 
         one.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (errorString.hasFocus()) {
-                    errorString.setText(errorString.getText() + "1");
+                if (bitString1.hasFocus()) {
+                    bitString1.setText(bitString1.getText() + "1");
                 }
 
                 else {
-                    bitString.setText(bitString.getText() + "1");
+                    bitString2.setText(bitString2.getText() + "1");
                 }
 //                if (bitString.isEnabled()) {
 //                    String temp = bitString.getText() + "1";
@@ -105,12 +111,12 @@ public class MainActivity extends AppCompatActivity {
         zero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (errorString.hasFocus()) {
-                    errorString.setText(errorString.getText() + "0");
+                if (bitString1.hasFocus()) {
+                    bitString1.setText(bitString1.getText() + "0");
                 }
 
                 else {
-                    bitString.setText(bitString.getText() + "0");
+                    bitString2.setText(bitString2.getText() + "0");
                 }
 //                if (bitString.isEnabled()) {
 //                    String temp = bitString.getText() + "0";
@@ -128,23 +134,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                int bitStringLength = bitString.length();
-                int errorStringLength = errorString.length();
+                int bitString1Length = bitString1.length();
+                int bitString2Length = bitString2.length();
 
-                if (bitStringLength == 0)
+                if (bitString1Length == 0)
                 {
-                    bitString.requestFocus();
+                    bitString1.requestFocus();
                     Context context = getApplicationContext();
                     CharSequence text = "Enter a bit string!";
                     int duration = Toast.LENGTH_SHORT;
                     Toast toast = Toast.makeText(context, text, duration);
                     toast.show();
                 }
-                else if (bitStringLength != errorStringLength)
+
+                if (bitString2Length == 0)
                 {
-                    errorString.requestFocus();
+                    bitString2.requestFocus();
                     Context context = getApplicationContext();
-                    CharSequence text = "Error: Length of bit strings don't match!";
+                    CharSequence text = "Enter a bit string!";
                     int duration = Toast.LENGTH_SHORT;
                     Toast toast = Toast.makeText(context, text, duration);
                     toast.show();
@@ -152,21 +159,23 @@ public class MainActivity extends AppCompatActivity {
 
                 else
                 {
-                    int padding = (8 - (bitStringLength % 8)) % 8;
-                    StringBuilder stringBuilder = new StringBuilder(padding + bitStringLength + 8);
-                    String length_string=Integer.toBinaryString(bitStringLength);
-                    for (int i=0; i< (5-length_string.length()); i++){
-                        stringBuilder.append('0');
+                    String bitstring=bitString1.getText().toString();
+                    String errorstring="";
+                    for(int i=0; i<bitString1Length;i++){
+                        if(i==Integer.parseInt(errorbit11.getText().toString()) || i==Integer.parseInt(errorbit12.getText().toString())){
+                            if(bitstring.charAt(i)=='0'){
+                                errorstring+="1";
+                            }
+                            else{
+                                errorstring+="0";
+                            }
+                        }
+                        else{
+                            errorstring+=bitstring.charAt(i);
+                        }
                     }
-                    stringBuilder.append(length_string);
-
-                    stringBuilder.append(errorString.getText()+crc_g(bitStringLength,bitString.getText().toString(),4,"1111"));
-                    for (int i = 0; i < padding; i++)
-                    {
-                        stringBuilder.append('0');
-                    }
-
-
+                    StringBuilder stringBuilder = new StringBuilder(bitString1Length + 5);
+                    stringBuilder.append(errorstring+crc_g(bitString1Length,bitstring,6,"101100"));
                     chirpConnect.send(stringBuilder.toString().getBytes());
                     listeningack=true;
                 }
@@ -233,38 +242,19 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            try{
-//                                BigInteger temp = new BigInteger(payload);
-                                String rec_text = new String(payload);
-                                String len_string="";
-                                for(int i=0; i<5; i++){
-                                    len_string=len_string+rec_text.charAt(i);
-                                }
-                                int string_len=Integer.parseInt(len_string,2);
-                                String orig_text="";
-                                String orig_text_crc="";
-                                for(int i=0; i<(string_len+3);i++){
-                                    if(i< string_len){
-                                        orig_text=orig_text+rec_text.charAt(i+5);
-                                        orig_text_crc=orig_text_crc+rec_text.charAt(i+5);
-                                    }
-                                    else{
-                                        orig_text_crc=orig_text_crc+rec_text.charAt(i+5);
-                                    }
-                                }
-                                if (error_d(string_len + 3, orig_text_crc, 4, "1111") == 1) {
-                                    top.setText("The correct text is: " + orig_text);
-                                    chirpConnect.send("1".getBytes());
-                                }
-                                else{
-                                    top.setText("The wrong text is: "+orig_text);
-                                    chirpConnect.send("0".getBytes());
-                                }
-                            }
-                            catch (Exception e){
-                                top.setText(e.toString());
-                            }
+                            String rec_text = new String(payload);
+                            int rec_text_length=rec_text.length();
+                            String orig_text=rec_text.substring(0,rec_text_length-5);
+                            String orig_text_crc=rec_text;
 
+                            if (error_d(rec_text_length, orig_text_crc, 6, "101100") == 1) {
+                                correct1.setText("The correct message 1 is: " + orig_text);
+                                chirpConnect.send("11".getBytes());
+                            }
+                            else{
+                                wrong1.setText("The wrong message 1 is: "+orig_text);
+                                chirpConnect.send("10".getBytes());
+                            }
 
 
                         }
@@ -275,31 +265,63 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            listeningack=false;
+
                             String ack= new String(payload);
-                            if(ack=="0"){
-                                int bitStringLength = bitString.length();
-                                int padding = (8 - (bitStringLength % 8)) % 8;
-                                StringBuilder stringBuilder = new StringBuilder(padding + bitStringLength + 8);
-                                String length_string=Integer.toBinaryString(bitStringLength);
-                                for (int i=0; i< (5-length_string.length()); i++){
-                                    stringBuilder.append('0');
-                                }
-                                stringBuilder.append(length_string);
-
-                                stringBuilder.append(bitString.getText()+crc_g(bitStringLength,bitString.getText().toString(),4,"1111"));
-                                for (int i = 0; i < padding; i++)
-                                {
-                                    stringBuilder.append('0');
-                                }
-
-
+                            if(ack=="10"){
+                                listeningack=false;
+                                int bitString1Length = bitString1.length();
+                                StringBuilder stringBuilder = new StringBuilder(bitString1Length + 5);
+                                stringBuilder.append(bitString1.getText().toString()+crc_g(bitString1Length,bitString1.getText().toString(),6,"101100"));
                                 chirpConnect.send(stringBuilder.toString().getBytes());
                                 listeningack=true;
+
                             }
-                            if(ack=="1"){
-                                top.setText("Message received");
+                            else if(ack=="11"){
+                                top.setText("Message 1 received");
+                                String bitstring=bitString2.getText().toString();
+                                int bitString2Length=bitString2.length();
+                                String errorstring="";
+                                for(int i=0; i<bitString2Length;i++){
+                                    if(i==Integer.parseInt(errorbit21.getText().toString()) || i==Integer.parseInt(errorbit22.getText().toString())){
+                                        if(bitstring.charAt(i)=='0'){
+                                            errorstring+="1";
+                                        }
+                                        else{
+                                            errorstring+="0";
+                                        }
+                                    }
+                                    else{
+                                        errorstring+=bitstring.charAt(i);
+                                    }
+                                }
+                                StringBuilder stringBuilder = new StringBuilder(bitString2Length + 5);
+                                stringBuilder.append(errorstring+crc_g(bitString2Length,bitstring,6,"101100"));
+                                chirpConnect.send(stringBuilder.toString().getBytes());
+                            }
+
+                            else if(ack=="20"){
+                                int bitString2Length = bitString2.length();
+                                StringBuilder stringBuilder = new StringBuilder(bitString2Length + 5);
+                                stringBuilder.append(bitString2.getText()+crc_g(bitString2Length,bitString2.getText().toString(),6,"101100"));
+                                chirpConnect.send(stringBuilder.toString().getBytes());
+                            }
+                            else if(ack=="21"){
+                                top.setText("Message 2 received");
                                 listeningack=false;
+                            }
+                            else{
+                                String rec_text = new String(payload);
+                                int rec_text_length=rec_text.length();
+                                String orig_text=rec_text.substring(0,rec_text_length-5);
+                                String orig_text_crc=rec_text;
+                                if (error_d(rec_text_length, orig_text_crc, 6, "101100") == 1) {
+                                    correct2.setText("The correct message 2 is: " + orig_text);
+                                    chirpConnect.send("21".getBytes());
+                                }
+                                else{
+                                    wrong2.setText("The wrong message 2 is: "+orig_text);
+                                    chirpConnect.send("20".getBytes());
+                                }
                             }
                         }
                     });
