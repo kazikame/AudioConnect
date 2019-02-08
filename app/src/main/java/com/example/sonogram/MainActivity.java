@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     HandlerThread timeoutThread = null;
     Looper timeoutLooper;
     Handler timeoutHandler;
-    final int timeout = 3000;
+    final int timeout = 5000;
     final int maxTimeoutTries = 3;
     boolean isTimeoutRunning = false;
 
@@ -235,10 +235,17 @@ public class MainActivity extends AppCompatActivity {
 
 
                 if (messageSent){
-                    String recdBitString = new String(payload);
+                    String recdBitString = "";
+                    try {
+                        recdBitString = new String(payload);
+                    } catch (Exception e) {
+                        return;
+                    }
+
                     if (recdBitString.equals(ACK + currSequenceNo))
                     {
-                        timeoutThread.quit();
+                        isTimeoutRunning = false;
+                        timeoutThread.quitSafely();
                         messageSent = false;
                         runOnUiThread(new Runnable() {
                             @Override
@@ -261,7 +268,8 @@ public class MainActivity extends AppCompatActivity {
                                         Toast.LENGTH_SHORT).show();
                             }
                         });
-                        timeoutThread.quit();
+                        isTimeoutRunning = false;
+                        timeoutThread.quitSafely();
                         chirpConnect.send((correctText + crc_g(correctText.length(), correctText)).getBytes());
                     }
 
@@ -356,6 +364,8 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i<maxTimeoutTries; i++) {
                     try {
                         Thread.sleep(timeout);
+                        if (!isTimeoutRunning)
+                            return;
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
