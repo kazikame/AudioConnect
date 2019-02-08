@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     HandlerThread timeoutThread = null;
     Looper timeoutLooper;
     Handler timeoutHandler;
-    final int timeout = 5000;
+    final int timeout = 10000;
     final int maxTimeoutTries = 3;
     boolean isTimeoutRunning = false;
 
@@ -239,13 +239,21 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         recdBitString = new String(payload);
                     } catch (Exception e) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getApplicationContext(),
+                                        "Received NULL :(" ,
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
                         return;
                     }
 
                     if (recdBitString.equals(ACK + currSequenceNo))
                     {
                         isTimeoutRunning = false;
-                        timeoutThread.quitSafely();
+                        timeoutThread.quit();
                         messageSent = false;
                         runOnUiThread(new Runnable() {
                             @Override
@@ -264,13 +272,25 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void run() {
                                 Toast.makeText(getApplicationContext(),
-                                        "Received NACK, Retrying!" + payload.toString() ,
+                                        "Received NACK, Retrying!" + (new String(payload)) ,
                                         Toast.LENGTH_SHORT).show();
                             }
                         });
                         isTimeoutRunning = false;
-                        timeoutThread.quitSafely();
-                        chirpConnect.send((correctText + crc_g(correctText.length(), correctText)).getBytes());
+                        timeoutThread.quit();
+                        chirpConnect.send((correctText + crc_g(correctText.length(), correctText) + currSequenceNo).getBytes());
+                    }
+
+                    else
+                    {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getApplicationContext(),
+                                        "Received: " + (new String(payload)) ,
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
 
 

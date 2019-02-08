@@ -152,10 +152,22 @@ public class ReceivingActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        chirpConnect.stop();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
         chirpConnect.start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        chirpConnect.stop();
     }
 
     public void setBackgroundGreen() {
