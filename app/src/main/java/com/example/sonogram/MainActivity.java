@@ -178,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
                     correctText = bitString.getText().toString();
                     chirpConnect.send((toBeSent + crc_g(bitStringLength, correctText)).getBytes());
                     Toast.makeText(getApplicationContext(), "Sending...", Toast.LENGTH_SHORT).show();
+
                 }
 
 //                if (bitString2Length == 0)
@@ -242,31 +243,50 @@ public class MainActivity extends AppCompatActivity {
                                 + " on channel: "
                                 + channel);
                 messageSent = true;
+//                listeningack=true;
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        send.setEnabled(false);
                         top.setText("Waiting for acknowledgement!");
                     }
                 });
+//                while (true) {
+//                    try {
+//                        wait(5000);
+//                    } catch (Exception e) {}
+//                        if (!listeningack) {
+//                            break;
+//                        }
+//                        runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                Toast.makeText(getApplicationContext(), "Retrying...", Toast.LENGTH_SHORT).show();
+//                            }
+//                        });
+//                        chirpConnect.send(payload);
+//                    }
+
             }
 
             @Override
             public void onReceiving(byte channel) {
                 //if (listening)
-                if (messageSent && (int)channel == 2)
+                if (messageSent){
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Toast.makeText(getApplicationContext(), "Receiving ack...", Toast.LENGTH_SHORT).show();
                         }
-                    });
-                else if ((int) channel == 0)
+                    });}
+                else {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Toast.makeText(getApplicationContext(), "Receiving on channel", Toast.LENGTH_SHORT).show();
                         }
-                    });
+                    });}
                 //}
                 Log.v("chirpConnectDemoApp", "This is called when the SDK is expecting a payload to be received on channel: " + channel);
             }
@@ -304,32 +324,34 @@ public class MainActivity extends AppCompatActivity {
 //                }
 
                 if (messageSent){
-                    if (channel == 2) {
-                        if (payload.toString().equals("1"))
-                        {
-                            messageSent = false;
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getApplicationContext(), "Sent Successfully!", Toast.LENGTH_SHORT).show();
-                                    top.setText("Successful!");
-                                }
-                            });
+//                    listeningack=false;
+                    if ((new String(payload)).equals("1"))
+                    {
 
-                        }
+                        messageSent = false;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                send.setEnabled(true);
+                                Toast.makeText(getApplicationContext(), "Sent Successfully!", Toast.LENGTH_SHORT).show();
+                                top.setText("Successful!");
+                            }
+                        });
 
-                        else
-                        {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(getApplicationContext(), "Unsuccessful, Retrying!", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-
-                            chirpConnect.send((correctText + crc_g(correctText.length(), correctText)).getBytes());
-                        }
                     }
+
+                    else
+                    {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "Unsuccessful, Retrying!" + payload.toString() , Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        chirpConnect.send((correctText + crc_g(correctText.length(), correctText)).getBytes());
+                    }
+
 
                 }
             }
