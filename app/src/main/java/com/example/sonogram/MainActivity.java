@@ -4,6 +4,11 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
+import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -31,32 +36,32 @@ import io.chirp.connect.models.ConnectState;
 import static com.example.sonogram.CRCToolkit.*;
 
 public class MainActivity extends AppCompatActivity {
+    //Chirp Config
     String KEY = "A28cBeC94C2f7e8D2eFEc6244";
     String SECRET = "f13f77B53100a95FCA3f61Aa13Cd6ACdfCC8DDccB025659502";
-//    String CONFIG = "aQSTJbapNLH2P8IUOxcW9u/ZtJql8wHl3sJapI4OaVxc2ozxN2+bN9dZCU0LHoTsKTCobEVLjyzIRj" +
-////            "nUVE7JXqpW6yZdQOYTS5NrzrR60JPIHfSfahYeUVTcvH/uaCH1jWK22pmE2G5PYDpkMIR5lGXv6qUG3OhnQ2oL" +
-////            "MEry4k+wiS26yvjba3zXEtKgHvggZugNWWt6d+rhfw9XDgv0youCG1aH8s/LZ+/St1eDLiDSOZfiPha74tyZaQ9" +
-////            "H0YCJ3/8ZqQuTa5lc2mJ9CsDwLwlxAiU9Zp/56hyYfWLt2/qTD15sbLZh2Rl8w/FRjKBrV8nbQqWVojFc0hgCVn" +
-////            "6TBF/je7XtPQWSdsub6+c0Opr6EnBuKBWj6WF3n361fLf2gtjZ5TkFwHIQgPrA9wSpuzWOysrXQUMjwsCx8RFFn" +
-////            "zKwHdHY/7BCsCVJKOCOtfaAbm/BIBlJ0CIoy2p7zzjC2XeU4c35ix1Iql1OOi4qV9M7Sj+6TMLwyPGgY15CUIvQ" +
-////            "7Dhsg0A/F8Q1WSy50C9vA8ziQBt7ot6d/DV2kQ2dzMs2bK56bkChMj+M1q0OZlMNFLYRSGSLOreaHmocAFTjTAB" +
-////            "Z2snjPbfnyLfAlz+Dopvnu2aadbdVlCgJloEAKazTNdVt9yVSTaT/RDtgH9Dr/jrl3lA3aku6TK0T5l0dezEItv" +
-////            "qL4d8gDc2mlar2Qd/B+e1hiGl1LCidpqfrsfBdUZvkvHfuluBJAOovXqq8gHwMw39gpLUxz2EIRAsVMae3vcpx1" +
-////            "id5gY9KU3gwCDY9kQmDKsqOtldYpniXr65qliUz3KeqvgKRd6qgbh4KJCFGOW/S9flIlqCRfBe91nVds4kmiBHn" +
-////            "eV0g6p2Js2qJZNQnA+WaQIuguAfUTE+cEyCAJWyTzKMBdK7FAl9JZUZXBQV0RV+eYglKWluEGYQ2JQ/lVIuABbV" +
-////            "cFKjZgCoRTcywAOQEb2ubAjUpaT3FkDgQKvGpGG5FA1GX4cKXH+rMnp5pEIhHKsPd1OibIBgpQfJtkc7d9al+Cw" +
-////            "wbDvP8JoPrbtDH3+UdDxt1jeUTpCqXqgg=";
-
     String CONFIG = "dDp/pK127YGHxWaOydb07S22h2s0Pg7gbqlWWztib/1xM0zX4FOkaHpdzHF+u89XrQ52HecEyXdoj8w96gbJNCTSX0Qyg0LHoM/s0SuLQmr+TF4YXueih3YSV0gZgblP/aQCbtb1vMSkm1ljvU6issYfwrmm8JAg5/W6ZM6wbqdvYMzaRykpEKeoP5c0PEuAhRC0Zd8R0f3TEFIOj6qkF2HCHx9fVSNBrfP+ws/pvDAOIhdr9LK6NS5nv3iwsP/V5csAdIATY5Hx19uJjdmjx/jYGeThv4/+l37kJnl4MJbg9nibBsGeOE4C3mba9L0ytE/jjg2vxy8Hy4KYeUB+6HcbFpZn1tKWyiX+8r3xJuRV0KYP4eZXZvTZDu+oXrGrOaUnMsuxdo1DN1qwtge+SlO/BeDOLo2Nc5mCecDYCt4KYR528c+7fcUQGMDCKZseWqYN9xrzRvAr+N2QLku/Tc8wiBRdcDfZYbLW1fpwvdKeQ4Haac+BiU8HmYRkaOSwi+uE1gtrf3r3AjSprkQ6XEGubbh4Bn8uxRg1bKSKmIC1KgnbNqH+10KlQ/iuR2twzpTLHS/oO6fnQsNQukg9V2lKy/mXzMFtdhU+VQq/Fl3EevebIXxOy9ZO6ln/y+zb7HKZgwvFdyxcj17VDqdmkCTKgQNv+gwfO7jPh/Bi8choPrKdPuQdxrsttR+482OqjeL3UWcWccgUv++me2ZmV7pX6eb+X1aSFoJxBuQdlZoO0J4e0zeEStggUfA5Vq6ru4Vng+LABsp61sNEaprcmuU/vWpNWpSHq+P1qcnducvZPFfmvXyrT2hInbo+hqTOZvlfVFhRXOxm7dm8UyCKKvchuuzUEGQPodbyydZa5+UCR+XSe2OslvcPALxKwNJMorgcwnvL+/DmrYbhNSsc0M6G9QhIloUAtvkHq6pbddv61UEMEtRP+FemKsqATQvrZy6f+wVGG4sfB426j5wTB2R4/m0UGxNkC3UjwOVNMClhUl1UeOpr9d8EV41PmgX7XdFyf0DqpktBK0AZeNttChJEkQdtu/Tik/Ocu92PKgMOYeJBRfhswlkbahx6uKWp8WPJgaQavyA/3rrI48A4yhfvCJHMe8lUWbh3i4NcoSsCPKDNaU718heOYr08OSP/LDUC3KcdIknqGSV0OTPuFML/5xZVfHus3wAktFWZdKUzrnpqUyMl0bbav9fpXxJZemfRSTr0G9pEu/ofmIWwaJPfR09QyK+ZBFo/ffaApGbCbbNgQ4pjOf2NrglAJbqGpGSz5f3ACsn7vKXYvYAOM+1eodJb2mY2a+tk7qDjTN/gDAGgZ4O9oXE3o4ELf5qlqbos56WtU1xsJEzWkyiX8FYdBkvWX/00JL0aY+X89jTkDKP/IhGw+5BobkIO2VshXi9md3MUC4Hym3SB4TWSNAbqBgMY7tMBOfKEaVZTBf3gIrYP4dzOFFW5yXQ0q+ENCeiLn9mloCLOp+xfIpqZbe4vqGdZ3nmSO6jvQ/Iv8o7d5F1YGPNURcI2XPhouHa/32qr9mKpqLSnZk89Xq5HKmpzLDDR5X9YkSe1hesN3CtOochPEzZuEfW2wDP4ujcpm4u0eW3UFkOBPpekKZowJSjXgvw+qG9KvPe/K8iMcrwHNXPKB5SvcAyx8iIkOLw4aDhEvCcBf3ekjdLvefEa7XuvGCfWRiSZEXQZuR7HRfEsffjqInrfn5Yi9DpLbzsN6IyPV1Kj1qu537bK44+VoC56cgDGgIMf8ysL5/gOeM2pqWQ3uQ6iWjUMH4S659BCa9cBmryWhep8gtmUn6/B9wIWiqByPVV4jKPpzwSqAbY0NYYJ/AbtDlEWtlsSOeCZgoRO8kM3eNfW4u83rz+BKqY76cJ9SBfV6oc0x15vyd/6Pc1/pU0tK0z4KGpv8cqnF4mr6E8jLXkLDFakex5yGAJlJnihDR9r02Ygl8vAJN8hJjZwtTk/a+Q/Zeu4KW/ZXhlHb4DVDNww0WFdvtFmHdQQZ+ziTen7l66HckK+uFx2cx6dqilwkIKGeS0cvvCeRryHCOoz2A4qEd3H2j61oOHdb+iEtzxVVZ3F0IWG+3aHCdBPvvOhRwd9WqUK7VxxK0AVRxVUylHt4wyLElnmuB6k1h0NByCzI1n6funSXXLwqJcKvl/2bINOFWA/WoNPOuB+aKEK/1tMfgEpgAIfhPCf9DavNmf6CIT2YAI8futqWM/AXdE7wbAnhEqeyflfuQoxxsgWMTw1e06Y31Q/5ozVx8dTWFlG/eeb0/A+73mPJu97VLO6diexlqMgKZIQ/0YARRccVvHq5r1BhGeM5++aUhGjUdRqHvPXxl1lgeQ0kqTFbxBLRU6O6hPTPR9rNFj4BQmTJG3t4qkO7ARWRXXzqVAQFu6L6DI2hkdqC63vOi6XMYUXpGqp7y0TKE9z6HpFQchhYVUe36hEAiwr+umsN63TJyThqcR+elbFSJgry+MTl0K2NErYADjFdyJUMobMQkqbDLYb+vOyxOY4U/wqELCwRr833WmqedB6OEYMIcP/9hfj0HBPSjMNzJ8DpQzfV34nQjekbzwx87ugEaX/826qHAxkYFhhIXSPQKo=";
+    private static String ACK = "1";
+    private static String NACK = "0";
     private static final int RESULT_REQUEST_RECORD_AUDIO = 0;
-    boolean listening = false;
+
+
     boolean messageSent = false;
-    boolean listeningack= false;
-    final int BIT_STRING = 1;
-    final int ERROR_STRING = 2;
+    private static int currSequenceNo = -1;
     String correctText;
     ChirpConnect chirpConnect = new ChirpConnect(this, KEY, SECRET);
 
+
+    HandlerThread timeoutThread = null;
+    Looper timeoutLooper;
+    Handler timeoutHandler;
+    final int timeout = 3000;
+    final int maxTimeoutTries = 3;
+    boolean isTimeoutRunning = false;
+
+    TextView top;
+
+    Button one, zero, send, listen;
+    EditText bitString, errorBitString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,30 +77,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //Top text view
-        final TextView top = findViewById(R.id.hello);
-//        final TextView wrong1 = findViewById(R.id.wrong1);
-//        final TextView correct1 = findViewById(R.id.correct1);
-//        final TextView wrong2 = findViewById(R.id.wrong2);
-//        final TextView correct2 = findViewById(R.id.correct2);
+        top = findViewById(R.id.hello);
 
         //Binary string buttons
-        final Button one = findViewById(R.id.one);
-        final Button zero = findViewById(R.id.zero);
+        one = findViewById(R.id.one);
+        zero = findViewById(R.id.zero);
 
         //Work Buttons
-        final Button send = findViewById(R.id.send);
-        final Button listen = findViewById(R.id.listen);
+        send = findViewById(R.id.send);
+        listen = findViewById(R.id.listen);
 
-        //Text fields
-//        final EditText bitString1 = findViewById(R.id.bitstring1);
-//        final EditText errorbit11 = findViewById(R.id.errorbit11);
-//        final EditText errorbit12 = findViewById(R.id.errorbit12);
-//        final EditText bitString2 = findViewById(R.id.bitstring2);
-//        final EditText errorbit21 = findViewById(R.id.errorbit21);
-//        final EditText errorbit22 = findViewById(R.id.errorbit22);
-
-        final EditText bitString = findViewById(R.id.bitstring);
-        final EditText errorBitString = findViewById(R.id.errorbits);
+        //Text Boxes
+        bitString = findViewById(R.id.bitstring);
+        errorBitString = findViewById(R.id.errorbits);
 
 
         one.setOnClickListener(new View.OnClickListener() {
@@ -108,15 +102,6 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     bitString.append("1");
                 }
-//                if (bitString.isEnabled()) {
-//                    String temp = bitString.getText() + "1";
-//                    bitString.setText(temp);
-//
-//                    if (temp.length() == messageLength) {
-//                        chirpConnect.send(new BigInteger(temp, 2).toByteArray());
-//                        bitString.setEnabled(false);
-//                    }
-//                }
             }
         });
 
@@ -130,15 +115,6 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     bitString.append("0");
                 }
-//                if (bitString.isEnabled()) {
-//                    String temp = bitString.getText() + "0";
-//                    bitString.setText(temp);
-//
-//                    if (temp.length() == messageLength) {
-//                        chirpConnect.send(new BigInteger(temp, 2).toByteArray());
-//                        bitString.setEnabled(false);
-//                    }
-//                }
             }
         });
 
@@ -157,8 +133,11 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 else if (errorStringLength == 0) {
+                    currSequenceNo++;
+                    if (currSequenceNo == 2)
+                        currSequenceNo = -1;
                     correctText = bitString.getText().toString();
-                    chirpConnect.send((correctText + crc_g(bitStringLength, correctText)).getBytes());
+                    chirpConnect.send((correctText + crc_g(bitStringLength, correctText) + currSequenceNo).getBytes());
                 }
 
                 else if (bitStringLength != errorStringLength) {
@@ -176,42 +155,16 @@ public class MainActivity extends AppCompatActivity {
                     // SENDING THE ERROR BITS!!!
                     String toBeSent = errorBitString.getText().toString();
                     correctText = bitString.getText().toString();
-                    chirpConnect.send((toBeSent + crc_g(bitStringLength, correctText)).getBytes());
+
+                    currSequenceNo++;
+                    if (currSequenceNo == 2)
+                        currSequenceNo = -1;
+
+                    chirpConnect.send((toBeSent + crc_g(bitStringLength, correctText) + currSequenceNo).getBytes());
                     Toast.makeText(getApplicationContext(), "Sending...", Toast.LENGTH_SHORT).show();
 
                 }
 
-//                if (bitString2Length == 0)
-//                {
-//                    bitString2.requestFocus();
-//                    Toast.makeText(getApplicationContext(),
-//                            "Enter a bit string!",
-//                            Toast.LENGTH_SHORT).show();
-//                }
-
-//                else
-//                {
-//                    String bitstring = bitString.getText().toString();
-//                    StringBuilder errorstring = new StringBuilder();
-//                    for(int i = 0; i < bitStringLength; i++) {
-//                        if(i == Integer.parseInt(errorbit11.getText().toString())
-//                                || i == Integer.parseInt(errorbit12.getText().toString())) {
-//                            if(bitstring.charAt(i)=='0'){
-//                                errorstring.append("1");
-//                            }
-//                            else {
-//                                errorstring.append("0");
-//                            }
-//                        }
-//                        else {
-//                            errorstring.append(bitstring.charAt(i));
-//                        }
-//                    }
-//                    StringBuilder stringBuilder = new StringBuilder(bitString1Length + 5);
-//                    stringBuilder.append(errorstring+crc_g(bitString1Length,bitstring,6,"101100"));
-//                    chirpConnect.send(stringBuilder.toString().getBytes());
-//                    listeningack=true;
-//                }
             }
         });
 
@@ -220,10 +173,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 chirpConnect.stop();
                startActivity(new Intent(getApplicationContext(), ReceivingActivity.class));
-//                if(!listeningack){
-//                    top.setText("Listening...");
-//                    listening = true;
-//                }
             }
         });
 
@@ -243,8 +192,6 @@ public class MainActivity extends AppCompatActivity {
                                 + " on channel: "
                                 + channel);
                 messageSent = true;
-//                listeningack=true;
-
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -252,27 +199,14 @@ public class MainActivity extends AppCompatActivity {
                         top.setText("Waiting for acknowledgement!");
                     }
                 });
-//                while (true) {
-//                    try {
-//                        wait(5000);
-//                    } catch (Exception e) {}
-//                        if (!listeningack) {
-//                            break;
-//                        }
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                Toast.makeText(getApplicationContext(), "Retrying...", Toast.LENGTH_SHORT).show();
-//                            }
-//                        });
-//                        chirpConnect.send(payload);
-//                    }
+
+                if (!isTimeoutRunning)
+                    startTimeout(payload);
 
             }
 
             @Override
             public void onReceiving(byte channel) {
-                //if (listening)
                 if (messageSent){
                     runOnUiThread(new Runnable() {
                         @Override
@@ -284,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), "Receiving on channel", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Receiving Garbage :(", Toast.LENGTH_SHORT).show();
                         }
                     });}
                 //}
@@ -299,35 +233,12 @@ public class MainActivity extends AppCompatActivity {
                                 + " on channel: "
                                 + channel);
 
-//                if (listening)
-//                {
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            String rec_text = new String(payload);
-//                            int rec_text_length=rec_text.length();
-//                            String orig_text=rec_text.substring(0,rec_text_length-5);
-//                            String orig_text_crc=rec_text;
-//
-//                            if (error_d(rec_text_length, orig_text_crc, 6, "101100") == 1) {
-//                                correct1.setText("The correct message 1 is: " + orig_text);
-//                                chirpConnect.send("11".getBytes());
-//                            }
-//                            else{
-//                                wrong1.setText("The wrong message 1 is: "+orig_text);
-//                                chirpConnect.send("10".getBytes());
-//                            }
-//
-//
-//                        }
-//                    });
-//                }
 
                 if (messageSent){
-//                    listeningack=false;
-                    if ((new String(payload)).equals("1"))
+                    String recdBitString = new String(payload);
+                    if (recdBitString.equals(ACK + currSequenceNo))
                     {
-
+                        timeoutThread.quit();
                         messageSent = false;
                         runOnUiThread(new Runnable() {
                             @Override
@@ -340,15 +251,17 @@ public class MainActivity extends AppCompatActivity {
 
                     }
 
-                    else
+                    else if (recdBitString.equals(NACK + currSequenceNo))
                     {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(getApplicationContext(), "Unsuccessful, Retrying!" + payload.toString() , Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(),
+                                        "Received NACK, Retrying!" + payload.toString() ,
+                                        Toast.LENGTH_SHORT).show();
                             }
                         });
-
+                        timeoutThread.quit();
                         chirpConnect.send((correctText + crc_g(correctText.length(), correctText)).getBytes());
                     }
 
@@ -428,5 +341,60 @@ public class MainActivity extends AppCompatActivity {
         chirpConnect.stop();
     }
 
+    private void startTimeout(final byte[] message) {
+        if (timeoutThread != null)
+            timeoutThread.quit();
+        timeoutThread = new HandlerThread("Timeout Thread");
+        timeoutThread.start();
 
+        timeoutLooper = timeoutThread.getLooper();
+        timeoutHandler = new Handler(timeoutLooper);
+        timeoutHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                isTimeoutRunning = true;
+                for (int i = 0; i<maxTimeoutTries; i++) {
+                    try {
+                        Thread.sleep(timeout);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getApplicationContext(),
+                                        "Timeout: Retrying...",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        chirpConnect.send(message);
+                    } catch (InterruptedException e) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getApplicationContext(),
+                                        "Timeout thread caught error, retry sending!",
+                                        Toast.LENGTH_SHORT).show();
+                                send.setEnabled(true);
+                            }
+                        });
+                        isTimeoutRunning = false;
+                        break;
+                    }
+                }
+
+                try {
+                    Thread.sleep(timeout);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(),
+                                    "Timeout try limit exceeded, try again!",
+                                    Toast.LENGTH_SHORT).show();
+                            send.setEnabled(true);
+                        }
+                    });
+                } catch (Exception e) {}
+
+                isTimeoutRunning = false;
+            }
+        });
+    }
 }
