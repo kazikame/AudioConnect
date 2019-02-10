@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     HandlerThread timeoutThread = null;
     Looper timeoutLooper;
     Handler timeoutHandler;
-    final int timeout = 10000;
+    final int timeout = 7000;
     final int maxTimeoutTries = 3;
     boolean isTimeoutRunning = false;
 
@@ -339,6 +339,8 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[] {Manifest.permission.RECORD_AUDIO},
                     RESULT_REQUEST_RECORD_AUDIO);
+
+            chirpConnect.start();
         }
         else {
             chirpConnect.start();

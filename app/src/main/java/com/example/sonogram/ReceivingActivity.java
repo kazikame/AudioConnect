@@ -13,7 +13,6 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,7 +39,6 @@ public class ReceivingActivity extends AppCompatActivity {
         final TextView[] messageBoxes = new TextView[2];
         messageBoxes[0] = findViewById(R.id.message1);
         messageBoxes[1] = findViewById(R.id.message2);
-        final ProgressBar pbar = findViewById(R.id.progressBar);
         messageBoxes[0].setText("Message 1:", TextView.BufferType.SPANNABLE);
         messageBoxes[1].setText("Message 2:", TextView.BufferType.SPANNABLE);
 
@@ -80,8 +78,6 @@ public class ReceivingActivity extends AppCompatActivity {
                             if (seqNo == 1)
                             {
                                 setBackgroundGreen();
-                                pbar.setIndeterminate(false);
-                                pbar.setProgress(pbar.getMax());
                                 top.setText("Received Successfully!");
 
                             }
